@@ -111,6 +111,42 @@ const ServerList = () => {
     );
   };
 
+  const ExpandButton = () => {
+    const record = useRecordContext();
+    if (!record) return null;
+    
+    const isExpanded = expandedRows.has(record.id);
+    
+    const toggleExpanded = () => {
+      const newExpanded = new Set(expandedRows);
+      if (isExpanded) {
+        newExpanded.delete(record.id);
+      } else {
+        newExpanded.add(record.id);
+      }
+      setExpandedRows(newExpanded);
+    };
+
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: '200px' }}>
+        <IconButton
+          size="small"
+          onClick={toggleExpanded}
+          sx={{ 
+            padding: '4px',
+            color: '#757575',
+            '&:hover': { color: '#1976D2' }
+          }}
+        >
+          {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
+        <Typography variant="body2" sx={{ color: '#212121', fontWeight: 500 }}>
+          {record.hostName}
+        </Typography>
+      </Box>
+    );
+  };
+
   const ExpandableDatagrid = ({ children, ...props }) => {
     const { data, isLoading } = useGetList('servers');
     
@@ -126,37 +162,7 @@ const ServerList = () => {
           overflowX: 'auto',
           '& .MuiTable-root': {
             minWidth: 'auto',
-            tableLayout: 'fixed',
-            width: '100%',
-          },
-          '& .MuiTableCell-root': {
-            wordWrap: 'break-word',
-            whiteSpace: 'normal',
-            maxWidth: '150px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          },
-          '@media (max-width: 1200px)': {
-            '& .MuiTableCell-root': {
-              maxWidth: '120px',
-              fontSize: '12px',
-              padding: '8px 12px',
-            },
-            '& .MuiTableHead-root .MuiTableCell-root': {
-              fontSize: '11px',
-              padding: '8px 12px',
-            }
-          },
-          '@media (max-width: 900px)': {
-            '& .MuiTableCell-root': {
-              maxWidth: '100px',
-              fontSize: '11px',
-              padding: '6px 8px',
-            },
-            '& .MuiTableHead-root .MuiTableCell-root': {
-              fontSize: '10px',
-              padding: '6px 8px',
-            }
+            tableLayout: 'auto',
           }
         }}
       >
@@ -466,7 +472,6 @@ const ServerCreate = () => {
           p: { xs: 2, md: 4 }, 
           backgroundColor: '#FAFAFA', 
           minHeight: '100vh',
-          width: '100%',
           maxWidth: '100%',
           overflow: 'hidden'
         }}>
@@ -485,7 +490,7 @@ const ServerCreate = () => {
             </Typography>
           </Paper>
           
-          <Grid container spacing={3} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
             <Grid item xs={12} lg={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
@@ -678,30 +683,28 @@ const ServerEdit = () => {
   return (
     <Edit transform={transform} mutationOptions={{ onSuccess }}>
       <SimpleForm onChange={handleFormChange}>
-        <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: '#FAFAFA', minHeight: '100vh', width: '100%', maxWidth: '100%' }}>
-          <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3, backgroundColor: '#FFFFFF', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+        <Box sx={{ p: 3, backgroundColor: '#FAFAFA', minHeight: '100vh' }}>
+          <Paper sx={{ p: 3, mb: 3, backgroundColor: '#FFFFFF' }}>
             <Typography variant="h4" sx={{ color: '#212121', mb: 2, fontWeight: 600 }}>
               Edit Server
             </Typography>
             <Typography variant="body1" sx={{ color: '#757575' }}>
-              Update server details and configuration.
+              Update server details and support information.
             </Typography>
           </Paper>
           
-          <Grid container spacing={3} sx={{ width: '100%', maxWidth: '100%' }}>
-            <Grid item xs={12} lg={6}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E0E0E0',
-                borderRadius: '12px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                height: 'fit-content'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
                     Server Information
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <TextInput source="hostName" fullWidth />
                     <TextInput source="domain" fullWidth />
                     <SelectInput 
@@ -721,19 +724,17 @@ const ServerEdit = () => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} lg={6}>
+            <Grid item xs={12} md={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E0E0E0',
-                borderRadius: '12px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                height: 'fit-content'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
                     Support & Management
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <TextInput source="app_supported_by" fullWidth />
                     <TextInput source="app_managed_by" fullWidth />
                     <TextInput source="tso_managed_by" fullWidth />
@@ -817,28 +818,32 @@ const ServerEdit = () => {
   );
 };
 
-// Server Show
+// Server Show with Navigation
 const ServerShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: record } = useGetOne('servers', { id });
-  const { data: allServers } = useGetList('servers');
+  const { data: record, isLoading } = useGetOne('servers', { id });
+  const { data: allRecords } = useGetList('servers');
   
-  const currentIndex = allServers?.findIndex(server => server.id === id) || 0;
+  const currentIndex = allRecords?.findIndex(r => r.id == id) || 0;
   const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < (allServers?.length || 0) - 1;
+  const hasNext = currentIndex < (allRecords?.length || 0) - 1;
   
   const goToPrevious = () => {
-    if (hasPrevious && allServers) {
-      navigate(`/servers/${allServers[currentIndex - 1].id}/show`);
+    if (hasPrevious) {
+      const prevRecord = allRecords[currentIndex - 1];
+      navigate(`/servers/${prevRecord.id}/show`);
     }
   };
   
   const goToNext = () => {
-    if (hasNext && allServers) {
-      navigate(`/servers/${allServers[currentIndex + 1].id}/show`);
+    if (hasNext) {
+      const nextRecord = allRecords[currentIndex + 1];
+      navigate(`/servers/${nextRecord.id}/show`);
     }
   };
+
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <Show>
