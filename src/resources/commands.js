@@ -24,7 +24,9 @@ import {
   CreateButton,
   useGetList,
   useGetOne,
-  useRecordContext
+  useRecordContext,
+  useNotify,
+  useRedirect
 } from 'react-admin';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -32,6 +34,7 @@ import {
   Grid,
   Paper,
   Typography,
+  TextField as MuiTextField,
   Button,
   Chip,
   Card,
@@ -52,6 +55,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import CodeIcon from '@mui/icons-material/Code';
 
 // Command List
 const CommandList = () => {
@@ -151,7 +155,37 @@ const CommandList = () => {
           overflowX: 'auto',
           '& .MuiTable-root': {
             minWidth: 'auto',
-            tableLayout: 'auto',
+            tableLayout: 'fixed',
+            width: '100%',
+          },
+          '& .MuiTableCell-root': {
+            wordWrap: 'break-word',
+            whiteSpace: 'normal',
+            maxWidth: '150px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          },
+          '@media (max-width: 1200px)': {
+            '& .MuiTableCell-root': {
+              maxWidth: '120px',
+              fontSize: '12px',
+              padding: '8px 12px',
+            },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: '11px',
+              padding: '8px 12px',
+            }
+          },
+          '@media (max-width: 900px)': {
+            '& .MuiTableCell-root': {
+              maxWidth: '100px',
+              fontSize: '11px',
+              padding: '6px 8px',
+            },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: '10px',
+              padding: '6px 8px',
+            }
           }
         }}
       >
@@ -363,13 +397,65 @@ const CommandList = () => {
 
 // Command Create
 const CommandCreate = () => {
+  const [jsonConfig, setJsonConfig] = useState('');
+  const [formData, setFormData] = useState({});
+  const [showJson, setShowJson] = useState(true);
+  const notify = useNotify();
+  const redirect = useRedirect();
+
+  // Generate JSON from form data
+  const generateJsonFromForm = (data) => {
+    const jsonData = {
+      commandId: data.commandId || '',
+      commandLabel: data.commandLabel || '',
+      description: data.description || '',
+      orgId: data.orgId || '',
+      isActive: data.isActive || false
+    };
+    return JSON.stringify(jsonData, null, 2);
+  };
+
+  // Update JSON when form data changes
+  const handleFormChange = (data) => {
+    setFormData(data);
+    const generatedJson = generateJsonFromForm(data);
+    setJsonConfig(generatedJson);
+  };
+
+  // Parse JSON and update form
+  const handleJsonChange = (event) => {
+    const newJson = event.target.value;
+    setJsonConfig(newJson);
+    
+    try {
+      const parsedData = JSON.parse(newJson);
+      setFormData(parsedData);
+    } catch (error) {
+      // Invalid JSON, keep current form data
+    }
+  };
+
+  const transform = (data) => {
+    const finalData = { ...formData, ...data };
+    return {
+      ...finalData,
+      jsonConfig: jsonConfig || generateJsonFromForm(finalData)
+    };
+  };
+
+  const onSuccess = () => {
+    notify('Command created successfully');
+    redirect('/commands');
+  };
+
   return (
-    <Create>
-      <SimpleForm>
+    <Create transform={transform} mutationOptions={{ onSuccess }}>
+      <SimpleForm onChange={handleFormChange}>
         <Box sx={{ 
           p: { xs: 2, md: 4 }, 
           backgroundColor: '#FAFAFA', 
           minHeight: '100vh',
+          width: '100%',
           maxWidth: '100%',
           overflow: 'hidden'
         }}>
@@ -388,7 +474,7 @@ const CommandCreate = () => {
             </Typography>
           </Paper>
           
-          <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
+          <Grid container spacing={3} sx={{ width: '100%', maxWidth: '100%' }}>
             <Grid item xs={12} lg={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
@@ -431,6 +517,68 @@ const CommandCreate = () => {
               </Card>
             </Grid>
           </Grid>
+          
+          {/* JSON Configuration Section */}
+          <Paper sx={{ 
+            p: { xs: 2, md: 3 }, 
+            mt: 3, 
+            backgroundColor: '#FFFFFF',
+            borderRadius: '12px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" sx={{ color: '#212121', mb: 1, fontWeight: 600 }}>
+                  JSON Configuration
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#757575' }}>
+                  View and edit the JSON configuration for this command.
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<CodeIcon />}
+                onClick={() => setShowJson(!showJson)}
+                sx={{
+                  borderColor: '#1976D2',
+                  color: '#1976D2',
+                  '&:hover': {
+                    borderColor: '#1565C0',
+                    backgroundColor: '#F3F8FF'
+                  }
+                }}
+              >
+                {showJson ? 'Hide JSON' : 'Show JSON'}
+              </Button>
+            </Box>
+            
+            {showJson && (
+              <Box sx={{ mt: 2 }}>
+                <MuiTextField
+                  multiline
+                  rows={8}
+                  fullWidth
+                  value={jsonConfig}
+                  onChange={handleJsonChange}
+                  variant="outlined"
+                  placeholder="JSON configuration will be generated automatically..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      fontFamily: 'monospace',
+                      fontSize: '14px',
+                      backgroundColor: '#F8F9FA',
+                      '&:hover': {
+                        backgroundColor: '#F0F0F0'
+                      }
+                    }
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: '#757575', mt: 1, display: 'block' }}>
+                  Edit the JSON directly or modify the form fields above. Invalid JSON will be ignored.
+                </Typography>
+              </Box>
+            )}
+          </Paper>
         </Box>
       </SimpleForm>
     </Create>
@@ -439,11 +587,62 @@ const CommandCreate = () => {
 
 // Command Edit
 const CommandEdit = () => {
+  const [jsonConfig, setJsonConfig] = useState('');
+  const [formData, setFormData] = useState({});
+  const [showJson, setShowJson] = useState(true);
+  const notify = useNotify();
+  const redirect = useRedirect();
+
+  // Generate JSON from form data
+  const generateJsonFromForm = (data) => {
+    const jsonData = {
+      commandId: data.commandId || '',
+      commandLabel: data.commandLabel || '',
+      description: data.description || '',
+      orgId: data.orgId || '',
+      isActive: data.isActive || false
+    };
+    return JSON.stringify(jsonData, null, 2);
+  };
+
+  // Update JSON when form data changes
+  const handleFormChange = (data) => {
+    setFormData(data);
+    const generatedJson = generateJsonFromForm(data);
+    setJsonConfig(generatedJson);
+  };
+
+  // Parse JSON and update form
+  const handleJsonChange = (event) => {
+    const newJson = event.target.value;
+    setJsonConfig(newJson);
+    
+    try {
+      const parsedData = JSON.parse(newJson);
+      setFormData(parsedData);
+    } catch (error) {
+      // Invalid JSON, keep current form data
+    }
+  };
+
+  const transform = (data) => {
+    const finalData = { ...formData, ...data };
+    return {
+      ...finalData,
+      jsonConfig: jsonConfig || generateJsonFromForm(finalData)
+    };
+  };
+
+  const onSuccess = () => {
+    notify('Command updated successfully');
+    redirect('/commands');
+  };
+
   return (
-    <Edit>
-      <SimpleForm>
-        <Box sx={{ p: 3, backgroundColor: '#FAFAFA', minHeight: '100vh' }}>
-          <Paper sx={{ p: 3, mb: 3, backgroundColor: '#FFFFFF' }}>
+    <Edit transform={transform} mutationOptions={{ onSuccess }}>
+      <SimpleForm onChange={handleFormChange}>
+        <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: '#FAFAFA', minHeight: '100vh', width: '100%', maxWidth: '100%' }}>
+          <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3, backgroundColor: '#FFFFFF', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
             <Typography variant="h4" sx={{ color: '#212121', mb: 2, fontWeight: 600 }}>
               Edit Command
             </Typography>
@@ -452,7 +651,7 @@ const CommandEdit = () => {
             </Typography>
           </Paper>
           
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{ width: '100%', maxWidth: '100%' }}>
             <Grid item xs={12} md={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
@@ -491,6 +690,68 @@ const CommandEdit = () => {
               </Card>
             </Grid>
           </Grid>
+          
+          {/* JSON Configuration Section */}
+          <Paper sx={{ 
+            p: { xs: 2, md: 3 }, 
+            mt: 3, 
+            backgroundColor: '#FFFFFF',
+            borderRadius: '12px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" sx={{ color: '#212121', mb: 1, fontWeight: 600 }}>
+                  JSON Configuration
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#757575' }}>
+                  View and edit the JSON configuration for this command.
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<CodeIcon />}
+                onClick={() => setShowJson(!showJson)}
+                sx={{
+                  borderColor: '#1976D2',
+                  color: '#1976D2',
+                  '&:hover': {
+                    borderColor: '#1565C0',
+                    backgroundColor: '#F3F8FF'
+                  }
+                }}
+              >
+                {showJson ? 'Hide JSON' : 'Show JSON'}
+              </Button>
+            </Box>
+            
+            {showJson && (
+              <Box sx={{ mt: 2 }}>
+                <MuiTextField
+                  multiline
+                  rows={8}
+                  fullWidth
+                  value={jsonConfig}
+                  onChange={handleJsonChange}
+                  variant="outlined"
+                  placeholder="JSON configuration will be generated automatically..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      fontFamily: 'monospace',
+                      fontSize: '14px',
+                      backgroundColor: '#F8F9FA',
+                      '&:hover': {
+                        backgroundColor: '#F0F0F0'
+                      }
+                    }
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: '#757575', mt: 1, display: 'block' }}>
+                  Edit the JSON directly or modify the form fields above. Invalid JSON will be ignored.
+                </Typography>
+              </Box>
+            )}
+          </Paper>
         </Box>
       </SimpleForm>
     </Edit>

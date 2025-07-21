@@ -108,42 +108,6 @@ const OrganizationList = () => {
     );
   };
 
-  const ExpandButton = () => {
-    const record = useRecordContext();
-    if (!record) return null;
-    
-    const isExpanded = expandedRows.has(record.id);
-    
-    const toggleExpanded = () => {
-      const newExpanded = new Set(expandedRows);
-      if (isExpanded) {
-        newExpanded.delete(record.id);
-      } else {
-        newExpanded.add(record.id);
-      }
-      setExpandedRows(newExpanded);
-    };
-
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: '200px' }}>
-        <IconButton
-          size="small"
-          onClick={toggleExpanded}
-          sx={{ 
-            padding: '4px',
-            color: '#757575',
-            '&:hover': { color: '#1976D2' }
-          }}
-        >
-          {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
-        <Typography variant="body2" sx={{ color: '#212121', fontWeight: 500 }}>
-          {record.orgId}
-        </Typography>
-      </Box>
-    );
-  };
-
   const ExpandableDatagrid = ({ children, ...props }) => {
     const { data, isLoading } = useGetList('organizations');
     
@@ -159,7 +123,37 @@ const OrganizationList = () => {
           overflowX: 'auto',
           '& .MuiTable-root': {
             minWidth: 'auto',
-            tableLayout: 'auto',
+            tableLayout: 'fixed',
+            width: '100%',
+          },
+          '& .MuiTableCell-root': {
+            wordWrap: 'break-word',
+            whiteSpace: 'normal',
+            maxWidth: '150px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          },
+          '@media (max-width: 1200px)': {
+            '& .MuiTableCell-root': {
+              maxWidth: '120px',
+              fontSize: '12px',
+              padding: '8px 12px',
+            },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: '11px',
+              padding: '8px 12px',
+            }
+          },
+          '@media (max-width: 900px)': {
+            '& .MuiTableCell-root': {
+              maxWidth: '100px',
+              fontSize: '11px',
+              padding: '6px 8px',
+            },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: '10px',
+              padding: '6px 8px',
+            }
           }
         }}
       >
@@ -439,13 +433,6 @@ const OrganizationCreate = () => {
     return JSON.stringify(jsonData, null, 2);
   };
 
-  // Update JSON when form data changes
-  const handleFormChange = (data) => {
-    setFormData(data);
-    const generatedJson = generateJsonFromForm(data);
-    setJsonConfig(generatedJson);
-  };
-
   // Parse JSON and update form
   const handleJsonChange = (event) => {
     const newJson = event.target.value;
@@ -458,6 +445,28 @@ const OrganizationCreate = () => {
       // Invalid JSON, keep current form data
     }
   };
+
+  // Update JSON periodically to sync with form
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const formElements = document.querySelectorAll('input, select, textarea');
+      const formData = {};
+      
+      formElements.forEach(element => {
+        if (element.name) {
+          const value = element.type === 'checkbox' ? element.checked : element.value;
+          formData[element.name] = value;
+        }
+      });
+      
+      if (Object.keys(formData).length > 0) {
+        const generatedJson = generateJsonFromForm(formData);
+        setJsonConfig(generatedJson);
+      }
+    }, 1000); // Update every second
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const transform = (data) => {
     const finalData = { ...formData, ...data };
@@ -474,11 +483,12 @@ const OrganizationCreate = () => {
 
   return (
     <Create transform={transform} mutationOptions={{ onSuccess }}>
-      <SimpleForm onChange={handleFormChange}>
+      <SimpleForm>
         <Box sx={{ 
           p: { xs: 2, md: 4 }, 
           backgroundColor: '#FAFAFA', 
           minHeight: '100vh',
+          width: '100%',
           maxWidth: '100%',
           overflow: 'hidden'
         }}>
@@ -513,20 +523,14 @@ const OrganizationCreate = () => {
                     }}
                   />
                 }
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CodeIcon sx={{ color: '#1976D2', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '14px', color: '#757575', fontWeight: 500 }}>
-                      Show JSON
-                    </Typography>
-                  </Box>
-                }
+                label="Show JSON"
+                sx={{ color: '#757575' }}
               />
             </Box>
           </Paper>
           
-          <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
-            <Grid item xs={12} lg={showJson ? 6 : 12}>
+          <Grid container spacing={3} sx={{ width: '100%', maxWidth: '100%' }}>
+            <Grid item xs={12} lg={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E0E0E0',
@@ -536,7 +540,7 @@ const OrganizationCreate = () => {
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
-                    Organization Details
+                    Organization Information
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <TextInput source="orgId" fullWidth />
@@ -548,7 +552,7 @@ const OrganizationCreate = () => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} lg={showJson ? 6 : 12}>
+            <Grid item xs={12} lg={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E0E0E0',
@@ -656,13 +660,6 @@ const OrganizationEdit = () => {
     return JSON.stringify(jsonData, null, 2);
   };
 
-  // Update JSON when form data changes
-  const handleFormChange = (data) => {
-    setFormData(data);
-    const generatedJson = generateJsonFromForm(data);
-    setJsonConfig(generatedJson);
-  };
-
   // Parse JSON and update form
   const handleJsonChange = (event) => {
     const newJson = event.target.value;
@@ -675,6 +672,28 @@ const OrganizationEdit = () => {
       // Invalid JSON, keep current form data
     }
   };
+
+  // Update JSON periodically to sync with form
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const formElements = document.querySelectorAll('input, select, textarea');
+      const formData = {};
+      
+      formElements.forEach(element => {
+        if (element.name) {
+          const value = element.type === 'checkbox' ? element.checked : element.value;
+          formData[element.name] = value;
+        }
+      });
+      
+      if (Object.keys(formData).length > 0) {
+        const generatedJson = generateJsonFromForm(formData);
+        setJsonConfig(generatedJson);
+      }
+    }, 1000); // Update every second
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const transform = (data) => {
     const finalData = { ...formData, ...data };
@@ -691,11 +710,12 @@ const OrganizationEdit = () => {
 
   return (
     <Edit transform={transform} mutationOptions={{ onSuccess }}>
-      <SimpleForm onChange={handleFormChange}>
+      <SimpleForm>
         <Box sx={{ 
           p: { xs: 2, md: 4 }, 
           backgroundColor: '#FAFAFA', 
           minHeight: '100vh',
+          width: '100%',
           maxWidth: '100%',
           overflow: 'hidden'
         }}>
@@ -730,20 +750,14 @@ const OrganizationEdit = () => {
                     }}
                   />
                 }
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CodeIcon sx={{ color: '#1976D2', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '14px', color: '#757575', fontWeight: 500 }}>
-                      Show JSON
-                    </Typography>
-                  </Box>
-                }
+                label="Show JSON"
+                sx={{ color: '#757575' }}
               />
             </Box>
           </Paper>
           
-          <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
-            <Grid item xs={12} lg={showJson ? 6 : 12}>
+          <Grid container spacing={3} sx={{ width: '100%', maxWidth: '100%' }}>
+            <Grid item xs={12} lg={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E0E0E0',
@@ -753,7 +767,7 @@ const OrganizationEdit = () => {
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
-                    Organization Details
+                    Organization Information
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <TextInput source="orgId" fullWidth />
@@ -765,7 +779,7 @@ const OrganizationEdit = () => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} lg={showJson ? 6 : 12}>
+            <Grid item xs={12} lg={6}>
               <Card sx={{ 
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E0E0E0',
@@ -815,31 +829,31 @@ const OrganizationEdit = () => {
                     <MuiTextField
                       fullWidth
                       multiline
-                    rows={20}
-                    value={jsonConfig}
-                    onChange={handleJsonChange}
-                    placeholder="JSON will be automatically generated from form fields..."
-                    variant="outlined"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        fontFamily: 'monospace',
-                        fontSize: '0.875rem',
-                        backgroundColor: '#F8F9FA',
-                        '& fieldset': {
-                          borderColor: '#E0E0E0',
+                      rows={20}
+                      value={jsonConfig}
+                      onChange={handleJsonChange}
+                      placeholder="JSON will be automatically generated from form fields..."
+                      variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: 'monospace',
+                          fontSize: '0.875rem',
+                          backgroundColor: '#F8F9FA',
+                          '& fieldset': {
+                            borderColor: '#E0E0E0',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#BDBDBD',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#2E7D32',
+                          },
                         },
-                        '&:hover fieldset': {
-                          borderColor: '#BDBDBD',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#2E7D32',
-                        },
-                      },
-                    }}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
             )}
           </Grid>
         </Box>
@@ -848,32 +862,28 @@ const OrganizationEdit = () => {
   );
 };
 
-// Organization Show with Navigation
+// Organization Show
 const OrganizationShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: record, isLoading } = useGetOne('organizations', { id });
-  const { data: allRecords } = useGetList('organizations');
+  const { data: record } = useGetOne('organizations', { id });
+  const { data: allOrganizations } = useGetList('organizations');
   
-  const currentIndex = allRecords?.findIndex(r => r.id == id) || 0;
+  const currentIndex = allOrganizations?.findIndex(org => org.id === id) || 0;
   const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < (allRecords?.length || 0) - 1;
+  const hasNext = currentIndex < (allOrganizations?.length || 0) - 1;
   
   const goToPrevious = () => {
-    if (hasPrevious) {
-      const prevRecord = allRecords[currentIndex - 1];
-      navigate(`/organizations/${prevRecord.id}/show`);
+    if (hasPrevious && allOrganizations) {
+      navigate(`/organizations/${allOrganizations[currentIndex - 1].id}/show`);
     }
   };
   
   const goToNext = () => {
-    if (hasNext) {
-      const nextRecord = allRecords[currentIndex + 1];
-      navigate(`/organizations/${nextRecord.id}/show`);
+    if (hasNext && allOrganizations) {
+      navigate(`/organizations/${allOrganizations[currentIndex + 1].id}/show`);
     }
   };
-
-  if (isLoading) return <div>Loading...</div>;
 
   return (
     <Show>
@@ -930,7 +940,7 @@ const OrganizationShow = () => {
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
-                    Basic Information
+                    Organization Information
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box>
@@ -957,17 +967,24 @@ const OrganizationShow = () => {
                       <Typography variant="body2" sx={{ color: '#757575', mb: 0.5 }}>Description</Typography>
                       <Typography variant="body1" sx={{ color: '#212121', fontWeight: 500 }}>{record?.description}</Typography>
                     </Box>
-                    <Divider />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card sx={{ 
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E0E0E0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
+                    Configuration & Management
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box>
                       <Typography variant="body2" sx={{ color: '#757575', mb: 0.5 }}>Authorization Scheme</Typography>
-                      <Chip 
-                        label={record?.authorizationScheme} 
-                        sx={{ 
-                          backgroundColor: record?.authorizationScheme === 'functional' ? '#E8F5E8' : '#FFF3E0',
-                          color: record?.authorizationScheme === 'functional' ? '#2E7D32' : '#FF9800',
-                          fontWeight: 500
-                        }} 
-                      />
+                      <Typography variant="body1" sx={{ color: '#212121', fontWeight: 500 }}>{record?.authorizationScheme}</Typography>
                     </Box>
                     <Divider />
                     <Box>
@@ -1000,32 +1017,6 @@ const OrganizationShow = () => {
                         }}
                       />
                     </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ 
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E0E0E0',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ color: '#212121', mb: 3, fontWeight: 600 }}>
-                    JSON Configuration
-                  </Typography>
-                  <Box sx={{ 
-                    backgroundColor: '#F8F9FA', 
-                    p: 2, 
-                    borderRadius: 1,
-                    fontFamily: 'monospace',
-                    fontSize: '0.875rem',
-                    whiteSpace: 'pre-wrap',
-                    maxHeight: '500px',
-                    overflow: 'auto',
-                    border: '1px solid #E0E0E0'
-                  }}>
-                    {record?.jsonConfig || 'No JSON configuration available'}
                   </Box>
                 </CardContent>
               </Card>
