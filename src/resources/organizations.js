@@ -43,7 +43,13 @@ import {
   Switch,
   FormControlLabel,
   Collapse,
-  IconButton
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -138,118 +144,268 @@ const OrganizationList = () => {
     );
   };
 
-  const ExpandedContent = () => {
-    const record = useRecordContext();
-    if (!record) return null;
+  const ExpandableDatagrid = ({ children, ...props }) => {
+    const { data, isLoading } = useGetList('organizations');
     
-    const isExpanded = expandedRows.has(record.id);
+    if (isLoading) return <div>Loading...</div>;
     
-    if (!isExpanded) return null;
-
     return (
-      <Box sx={{ 
-        p: 2, 
-        backgroundColor: '#F8F9FA', 
-        borderTop: '1px solid #E0E0E0',
-        mt: 1
-      }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle2" sx={{ color: '#757575', mb: 1 }}>Description</Typography>
-            <Typography variant="body2" sx={{ color: '#212121' }}>
-              {record.description || 'No description available'}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle2" sx={{ color: '#757575', mb: 1 }}>Queries Key</Typography>
-            <Typography variant="body2" sx={{ color: '#212121' }}>
-              {record.queriesKey || 'Not specified'}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Box>
+      <TableContainer 
+        component={Paper} 
+        sx={{ 
+          borderRadius: '8px',
+          border: '1px solid #E0E0E0',
+          maxWidth: '100%',
+          overflowX: 'auto'
+        }}
+      >
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Organization ID
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Organization Name
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Mnemonic
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Authorization Scheme
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Supported By
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Managed By
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Service Offering
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px'
+              }}>
+                Status
+              </TableCell>
+              <TableCell sx={{ 
+                backgroundColor: '#F5F5F5',
+                fontWeight: 600,
+                color: '#212121',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                whiteSpace: 'nowrap',
+                padding: '12px 16px',
+                minWidth: '120px'
+              }}>
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data?.map((record) => {
+              const isExpanded = expandedRows.has(record.id);
+              
+              return (
+                <React.Fragment key={record.id}>
+                  <TableRow sx={{ 
+                    '&:hover': { backgroundColor: '#F8F9FA' },
+                    '& .MuiTableCell-root': {
+                      borderBottom: '1px solid #E0E0E0',
+                      padding: '12px 16px',
+                      fontSize: '14px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }
+                  }}>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: '200px' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            const newExpanded = new Set(expandedRows);
+                            if (isExpanded) {
+                              newExpanded.delete(record.id);
+                            } else {
+                              newExpanded.add(record.id);
+                            }
+                            setExpandedRows(newExpanded);
+                          }}
+                          sx={{ 
+                            padding: '4px',
+                            color: '#757575',
+                            '&:hover': { color: '#1976D2' }
+                          }}
+                        >
+                          {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </IconButton>
+                        <Typography variant="body2" sx={{ color: '#212121', fontWeight: 500 }}>
+                          {record.orgId}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{record.orgName}</TableCell>
+                    <TableCell>{record.mnemonic}</TableCell>
+                    <TableCell>{record.authorizationScheme}</TableCell>
+                    <TableCell>{record.supportedBy}</TableCell>
+                    <TableCell>{record.managedBy}</TableCell>
+                    <TableCell>{record.serviceOffering}</TableCell>
+                    <TableCell>
+                      <Chip
+                        icon={record.isActive ? <CheckCircleIcon /> : <CancelIcon />}
+                        label={record.isActive ? 'Active' : 'Inactive'}
+                        size="small"
+                        sx={{
+                          backgroundColor: record.isActive ? '#E8F5E8' : '#FFEBEE',
+                          color: record.isActive ? '#2E7D32' : '#D32F2F',
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          height: '24px',
+                          '& .MuiChip-icon': {
+                            color: record.isActive ? '#2E7D32' : '#D32F2F',
+                            fontSize: '16px',
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ minWidth: '120px', paddingRight: '24px' }}>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <ShowButton 
+                          label="" 
+                          record={record}
+                          sx={{ 
+                            minWidth: 'auto',
+                            padding: '6px',
+                            marginRight: '8px',
+                            '& .MuiButton-startIcon': {
+                              margin: 0
+                            }
+                          }}
+                        />
+                        <EditButton 
+                          label="" 
+                          record={record}
+                          sx={{ 
+                            minWidth: 'auto',
+                            padding: '6px',
+                            '& .MuiButton-startIcon': {
+                              margin: 0
+                            }
+                          }}
+                        />
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                  {isExpanded && (
+                    <TableRow>
+                      <TableCell colSpan={9} sx={{ padding: 0, border: 'none' }}>
+                        <Box sx={{ 
+                          p: 2, 
+                          backgroundColor: '#F8F9FA', 
+                          borderTop: '1px solid #E0E0E0'
+                        }}>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} md={6}>
+                              <Typography variant="subtitle2" sx={{ color: '#757575', mb: 1 }}>Description</Typography>
+                              <Typography variant="body2" sx={{ color: '#212121' }}>
+                                {record.description || 'No description available'}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                              <Typography variant="subtitle2" sx={{ color: '#757575', mb: 1 }}>Queries Key</Typography>
+                              <Typography variant="body2" sx={{ color: '#212121' }}>
+                                {record.queriesKey || 'Not specified'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
     );
   };
 
   return (
     <List filters={filters} actions={<ListActions />}>
-      <Datagrid 
-        sx={{
-          '& .MuiTableRow-root:hover': {
-            backgroundColor: '#F8F9FA',
-          },
-          '& .MuiTableCell-root': {
-            borderBottom: '1px solid #E0E0E0',
-            padding: '12px 16px',
-            fontSize: '14px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          },
-          '& .MuiTableHead-root .MuiTableCell-root': {
-            backgroundColor: '#F5F5F5',
-            fontWeight: 600,
-            color: '#212121',
-            fontSize: '13px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            whiteSpace: 'nowrap',
-          },
-          '& .MuiTable-root': {
-            minWidth: 'auto',
-            tableLayout: 'auto',
-          },
-          '& .MuiTableContainer-root': {
-            overflowX: 'auto',
-            borderRadius: '8px',
-            border: '1px solid #E0E0E0',
-            maxWidth: '100%',
-          },
-          '& .MuiTableBody-root .MuiTableCell-root:last-child': {
-            paddingRight: '24px',
-            minWidth: '120px',
-          },
-          '& .MuiTableBody-root .MuiTableCell-root:nth-last-child(2)': {
-            paddingRight: '16px',
-            minWidth: '100px',
-          },
-          '& .MuiTableBody-root .MuiTableCell-root:nth-last-child(3)': {
-            paddingRight: '16px',
-            minWidth: '120px',
-          }
-        }}
-      >
-        <ExpandButton />
-        <TextField source="orgName" />
-        <TextField source="mnemonic" />
-        <TextField source="authorizationScheme" />
-        <TextField source="supportedBy" />
-        <TextField source="managedBy" />
-        <TextField source="serviceOffering" />
-        <CustomBooleanField source="isActive" />
-        <ShowButton 
-          label="" 
-          sx={{ 
-            minWidth: 'auto',
-            padding: '6px',
-            marginRight: '8px',
-            '& .MuiButton-startIcon': {
-              margin: 0
-            }
-          }}
-        />
-        <EditButton 
-          label="" 
-          sx={{ 
-            minWidth: 'auto',
-            padding: '6px',
-            '& .MuiButton-startIcon': {
-              margin: 0
-            }
-          }}
-        />
-        <ExpandedContent />
-      </Datagrid>
+      <ExpandableDatagrid />
     </List>
   );
 };
