@@ -156,7 +156,11 @@ const OrganizationList = () => {
           borderRadius: '8px',
           border: '1px solid #E0E0E0',
           maxWidth: '100%',
-          overflowX: 'auto'
+          overflowX: 'auto',
+          '& .MuiTable-root': {
+            minWidth: 'auto',
+            tableLayout: 'auto',
+          }
         }}
       >
         <Table>
