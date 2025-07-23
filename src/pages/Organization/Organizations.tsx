@@ -290,7 +290,7 @@ const Organizations: React.FC = () => {
               <Button
                 onClick={handleBulkEdit}
                 startIcon={<EditIcon />}
-                sx={{ mr: 1 }}
+                sx={{ mr: 1, minWidth: 140 }}
               >
                 Bulk Edit
               </Button>
