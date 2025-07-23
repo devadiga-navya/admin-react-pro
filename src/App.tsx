@@ -1,16 +1,19 @@
 import React from 'react';
-import { Admin, Resource } from 'react-admin';
-import { createTheme } from '@mui/material/styles';
-import { ThemeProvider } from '@mui/material/styles';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+
+import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
-import { dataProvider } from './dataProvider';
-import { OrganizationList, OrganizationCreate, OrganizationEdit, OrganizationShow } from './resources/organizations';
-import { ServerList, ServerCreate, ServerEdit, ServerShow } from './resources/servers';
-import { CommandList, CommandCreate, CommandEdit, CommandShow } from './resources/commands';
-import BusinessIcon from '@mui/icons-material/Business';
-import ComputerIcon from '@mui/icons-material/Computer';
-import TerminalIcon from '@mui/icons-material/Terminal';
+import Organizations from './pages/Organization/Organizations';
+import OrganizationForm from './pages/Organization/OrganizationForm';
+import OrganizationDetail from './pages/Organization/OrganizationDetail';
+import Servers from './pages/Server/Servers';
+import ServerForm from './pages/Server/ServerForm';
+import ServerDetail from './pages/Server/ServerDetail';
+import Commands from './pages/Command/Commands';
+import CommandForm from './pages/Command/CommandForm';
+import CommandDetail from './pages/Command/CommandDetail';
 
 const theme = createTheme({
   palette: {
@@ -137,40 +140,31 @@ const theme = createTheme({
   },
 });
 
-const App = () => (
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <Admin 
-      dashboard={Dashboard}
-      dataProvider={dataProvider}
-      title="Admin Dashboard"
-    >
-      <Resource 
-        name="organizations" 
-        list={OrganizationList}
-        create={OrganizationCreate}
-        edit={OrganizationEdit}
-        show={OrganizationShow}
-        icon={BusinessIcon}
-      />
-      <Resource 
-        name="servers" 
-        list={ServerList}
-        create={ServerCreate}
-        edit={ServerEdit}
-        show={ServerShow}
-        icon={ComputerIcon}
-      />
-      <Resource 
-        name="commands" 
-        list={CommandList}
-        create={CommandCreate}
-        edit={CommandEdit}
-        show={CommandShow}
-        icon={TerminalIcon}
-      />
-    </Admin>
-  </ThemeProvider>
-);
+const App: React.FC = () => {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/administration/organizations" element={<Organizations />} />
+            <Route path="/administration/organizations/create" element={<OrganizationForm mode="create" />} />
+            <Route path="/administration/organizations/edit/:id" element={<OrganizationForm mode="edit" />} />
+            <Route path="/administration/organizations/detail/:id" element={<OrganizationDetail />} />
+            <Route path="/administration/servers" element={<Servers />} />
+            <Route path="/administration/servers/create" element={<ServerForm mode="create" />} />
+            <Route path="/administration/servers/edit/:id" element={<ServerForm mode="edit" />} />
+            <Route path="/administration/servers/detail/:id" element={<ServerDetail />} />
+            <Route path="/administration/commands" element={<Commands />} />
+            <Route path="/administration/commands/create" element={<CommandForm mode="create" />} />
+            <Route path="/administration/commands/edit/:id" element={<CommandForm mode="edit" />} />
+            <Route path="/administration/commands/detail/:id" element={<CommandDetail />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </ThemeProvider>
+  );
+};
 
 export default App; 
