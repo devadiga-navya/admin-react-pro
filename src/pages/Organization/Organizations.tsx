@@ -11,7 +11,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
   TextField,
   Dialog,
   DialogTitle,
@@ -170,7 +169,7 @@ const Organizations: React.FC = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -253,10 +252,10 @@ const Organizations: React.FC = () => {
 
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }}>
+    <Box sx={{ p: 2 }}>
+      <Paper sx={{ p: 2 }} className="listing-container">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }} className="listing-header">
+          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }} className="listing-title">
             Organizations
           </Typography>
           <Button
@@ -264,25 +263,27 @@ const Organizations: React.FC = () => {
             startIcon={<AddIcon />}
             onClick={handleCreate}
             sx={{ backgroundColor: '#D71E28' }}
+            className="btn btn-primary"
           >
             Add Organization
           </Button>
         </Box>
 
         {/* Search and Filters */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2 }} className="listing-actions">
           <TextField
             fullWidth
             placeholder="Search organizations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ mb: 1 }}
+            className="listing-search"
           />
         </Box>
 
         {/* Bulk Actions */}
         {selectedItems.length > 0 && (
-          <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }}>
+          <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }} className="listing-bulk-actions">
             <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
               {selectedItems.length} selected
             </Typography>
@@ -291,6 +292,7 @@ const Organizations: React.FC = () => {
                 onClick={handleBulkEdit}
                 startIcon={<EditIcon />}
                 sx={{ mr: 1, minWidth: 140 }}
+                className="btn"
               >
                 Bulk Edit
               </Button>
@@ -300,7 +302,7 @@ const Organizations: React.FC = () => {
 
         {/* Table */}
         <TableContainer>
-          <Table>
+          <Table className="listing-table">
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -308,6 +310,7 @@ const Organizations: React.FC = () => {
                     indeterminate={selectedItems.length > 0 && selectedItems.length < filteredOrganizations.length}
                     checked={selectedItems.length === filteredOrganizations.length && filteredOrganizations.length > 0}
                     onChange={handleSelectAll}
+                    className="listing-checkbox"
                   />
                 </TableCell>
                 <TableCell>Organization ID</TableCell>
@@ -338,6 +341,7 @@ const Organizations: React.FC = () => {
                           icon={org.isActive ? <CheckCircleIcon /> : <CancelIcon />}
                           label={org.isActive ? 'Active' : 'Inactive'}
                           size="small"
+                          className={`listing-status ${org.isActive ? 'active' : 'inactive'}`}
                           sx={{
                             backgroundColor: org.isActive ? '#E8F5E8' : '#FFEBEE',
                             color: org.isActive ? '#1976D2' : '#D32F2F',
@@ -347,10 +351,11 @@ const Organizations: React.FC = () => {
                       </TableCell>
                       <TableCell>{org.authorizationScheme}</TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }} className="listing-actions-cell">
                           <IconButton
                             size="small"
                             onClick={() => handleExpandRow(org.id)}
+                            className="listing-action-btn"
                           >
                             {expandedRows.has(org.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                           </IconButton>
@@ -359,12 +364,14 @@ const Organizations: React.FC = () => {
                             onClick={() => handleViewDetails(org)}
                             sx={{ color: '#4CAF50' }}
                             title="View Details"
+                            className="listing-action-btn view"
                           >
                             <VisibilityIcon />
                           </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(org)}
+                            className="listing-action-btn edit"
                           >
                             <EditIcon />
                           </IconButton>
@@ -373,6 +380,7 @@ const Organizations: React.FC = () => {
                             onClick={() => handleViewServers(org.id)}
                             sx={{ color: '#1976D2' }}
                             title="View Servers"
+                            className="listing-action-btn"
                           >
                             <ComputerIcon />
                           </IconButton>
@@ -381,6 +389,7 @@ const Organizations: React.FC = () => {
                             onClick={() => handleViewCommands(org.id)}
                             sx={{ color: '#FF9800' }}
                             title="View Commands"
+                            className="listing-action-btn"
                           >
                             <TerminalIcon />
                           </IconButton>
@@ -388,6 +397,7 @@ const Organizations: React.FC = () => {
                             size="small"
                             onClick={() => handleDelete(org.id)}
                             sx={{ color: '#D32F2F' }}
+                            className="listing-action-btn delete"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -468,15 +478,79 @@ const Organizations: React.FC = () => {
           </Table>
         </TableContainer>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredOrganizations.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {/* Custom Pagination */}
+        <div className="listing-pagination">
+          <div className="listing-pagination-info">
+            Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredOrganizations.length)} of {filteredOrganizations.length} organizations
+          </div>
+          <div className="listing-pagination-controls">
+            {/* Rows per page selector */}
+            <div className="listing-filter">
+              <label>Rows per page:</label>
+              <select 
+                value={rowsPerPage}
+                onChange={handleChangeRowsPerPage}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
+            
+            {/* Page navigation */}
+            <div className="d-flex align-items-center" style={{ gap: 'var(--spacing-xs)' }}>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, 0)}
+                disabled={page === 0}
+                title="First page"
+              >
+                «
+              </button>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, page - 1)}
+                disabled={page === 0}
+                title="Previous page"
+              >
+                ‹
+              </button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, Math.ceil(filteredOrganizations.length / rowsPerPage)) }, (_, i) => {
+                const pageNumber = i + 1;
+                const isActive = page === i;
+                return (
+                  <button
+                    key={pageNumber}
+                    className={`listing-pagination-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => handleChangePage(null, i)}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+              
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, page + 1)}
+                disabled={page >= Math.ceil(filteredOrganizations.length / rowsPerPage) - 1}
+                title="Next page"
+              >
+                ›
+              </button>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, Math.ceil(filteredOrganizations.length / rowsPerPage) - 1)}
+                disabled={page >= Math.ceil(filteredOrganizations.length / rowsPerPage) - 1}
+                title="Last page"
+              >
+                »
+              </button>
+            </div>
+          </div>
+        </div>
       </Paper>
 
 

@@ -188,25 +188,26 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ p: 2 }}>
+      <Paper sx={{ p: 2 }} className="form-container">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }} className="form-header">
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleCancel}
             sx={{ mr: 2 }}
+            className="btn btn-secondary"
           >
             Back
           </Button>
-          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }}>
+          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }} className="form-title">
             {mode === 'create' ? 'Create Organization' : 'Edit Organization'}
           </Typography>
         </Box>
 
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
+        <form onSubmit={handleSubmit} className="form-section">
+          <Grid container spacing={2} className="form-grid">
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Organization ID *"
@@ -214,6 +215,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
                   onChange={(e) => setFormData({ ...formData, orgId: e.target.value })}
                   required
                   size="small"
+                  className="form-input"
                 />
                 <Tooltip title="Unique identifier for the organization. This should be a short, alphanumeric code that represents the organization (e.g., ORG001, TECH01).">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
@@ -221,7 +223,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Organization Name *"
@@ -229,6 +231,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
                   onChange={(e) => setFormData({ ...formData, orgName: e.target.value })}
                   required
                   size="small"
+                  className="form-input"
                 />
                 <Tooltip title="Full name of the organization as it appears in official documents and communications.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
@@ -236,7 +239,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Mnemonic *"
@@ -244,6 +247,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
                   onChange={(e) => setFormData({ ...formData, mnemonic: e.target.value })}
                   required
                   size="small"
+                  className="form-input"
                 />
                 <Tooltip title="Short abbreviation or acronym for the organization name. Used for quick reference and system integration (e.g., TSI for Tech Solutions Inc).">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
@@ -251,7 +255,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Queries Key *"
@@ -259,6 +263,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
                   onChange={(e) => setFormData({ ...formData, queriesKey: e.target.value })}
                   required
                   size="small"
+                  className="form-input"
                 />
                 <Tooltip title="Database query identifier used for data retrieval and reporting. This key is used in system queries to filter data specific to this organization.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
@@ -266,87 +271,95 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
-                  label="Description"
+                  label="Description *"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   multiline
-                  rows={2}
+                  rows={3}
+                  required
                   size="small"
+                  className="form-textarea"
                 />
-                <Tooltip title="Detailed description of the organization's purpose, business focus, and key activities. This helps users understand what the organization does.">
+                <Tooltip title="Detailed description of the organization's purpose, scope, and responsibilities within the system.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20, mt: 1 }} />
                 </Tooltip>
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <FormControl fullWidth size="small">
-                  <InputLabel>Authorization Scheme</InputLabel>
+                  <InputLabel>Authorization Scheme *</InputLabel>
                   <Select
                     value={formData.authorizationScheme}
                     onChange={(e) => setFormData({ ...formData, authorizationScheme: e.target.value as 'functional' | 'ad_group' })}
-                    label="Authorization Scheme"
+                    label="Authorization Scheme *"
+                    required
+                    className="form-select"
                   >
                     <MenuItem value="functional">Functional</MenuItem>
                     <MenuItem value="ad_group">AD Group</MenuItem>
                   </Select>
                 </FormControl>
-                <Tooltip title="Defines how user access is managed for this organization. 'Functional' uses role-based access, while 'AD Group' uses Active Directory group membership for authorization.">
+                <Tooltip title="The type of authorization system used for this organization. Functional uses role-based access, while AD Group uses Active Directory group membership.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
                 </Tooltip>
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TextField
-                  fullWidth
-                  label="Service Offering"
-                  value={formData.serviceOffering}
-                  onChange={(e) => setFormData({ ...formData, serviceOffering: e.target.value })}
-                  size="small"
-                />
-                <Tooltip title="Primary service or product offering of the organization. This helps categorize and understand the organization's main business focus.">
-                  <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
-                </Tooltip>
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Supported By"
                   value={formData.supportedBy}
                   onChange={(e) => setFormData({ ...formData, supportedBy: e.target.value })}
                   size="small"
+                  className="form-input"
                 />
-                <Tooltip title="Name of the person or team responsible for providing technical support and maintenance for this organization's systems and services.">
+                <Tooltip title="Name of the person or team responsible for providing technical support for this organization.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
                 </Tooltip>
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Managed By"
                   value={formData.managedBy}
                   onChange={(e) => setFormData({ ...formData, managedBy: e.target.value })}
                   size="small"
+                  className="form-input"
                 />
-                <Tooltip title="Name of the person or team responsible for managing and overseeing the organization's operations, budget, and strategic direction.">
+                <Tooltip title="Name of the person or team responsible for managing this organization's resources and operations.">
+                  <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
+                </Tooltip>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
+                <TextField
+                  fullWidth
+                  label="Service Offering"
+                  value={formData.serviceOffering}
+                  onChange={(e) => setFormData({ ...formData, serviceOffering: e.target.value })}
+                  size="small"
+                  className="form-input"
+                />
+                <Tooltip title="Primary service or product offering provided by this organization.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
                 </Tooltip>
               </Box>
             </Grid>
           </Grid>
 
-          <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }} className="form-actions">
             <Button
               variant="outlined"
               onClick={handleCancel}
+              className="btn btn-secondary"
             >
               Cancel
             </Button>
@@ -355,6 +368,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ mode }) => {
               variant="contained"
               startIcon={<SaveIcon />}
               sx={{ backgroundColor: '#D71E28' }}
+              className="btn btn-primary"
             >
               {mode === 'create' ? 'Create Organization' : 'Update Organization'}
             </Button>

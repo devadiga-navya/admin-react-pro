@@ -3,6 +3,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
+// Import CSS files
+import './styles/global.css';
+import './styles/forms.css';
+import './styles/listings.css';
+import './styles/details.css';
+import './styles/components.css';
+
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Organizations from './pages/Organization/Organizations';

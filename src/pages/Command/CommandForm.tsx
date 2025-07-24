@@ -31,6 +31,28 @@ interface Command {
   isActive: boolean;
 }
 
+// Mock organization data
+const mockOrganizations = [
+  {
+    id: 1,
+    orgId: 'ORG001',
+    orgName: 'Tech Solutions Inc',
+    mnemonic: 'TSI',
+  },
+  {
+    id: 2,
+    orgId: 'ORG002',
+    orgName: 'Data Analytics Corp',
+    mnemonic: 'DAC',
+  },
+  {
+    id: 3,
+    orgId: 'ORG003',
+    orgName: 'Cloud Infrastructure Ltd',
+    mnemonic: 'CIL',
+  }
+];
+
 // Mock data for edit mode
 const mockCommands: Command[] = [
   {
@@ -142,25 +164,26 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ p: 2 }}>
+      <Paper sx={{ p: 2 }} className="form-container">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }} className="form-header">
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleCancel}
             sx={{ mr: 2 }}
+            className="btn btn-secondary"
           >
             Back
           </Button>
-          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }}>
+          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }} className="form-title">
             {mode === 'create' ? 'Create Command' : 'Edit Command'}
           </Typography>
         </Box>
 
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
+        <form onSubmit={handleSubmit} className="form-section">
+          <Grid container spacing={2} className="form-grid">
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Command ID *"
@@ -168,6 +191,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
                   onChange={(e) => setFormData({ ...formData, commandId: e.target.value })}
                   required
                   size="small"
+                  className="form-input"
                 />
                 <Tooltip title="Unique identifier for the command. This should be a short, alphanumeric code (e.g., CMD001, RESTART01).">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
@@ -175,7 +199,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Command Label *"
@@ -183,6 +207,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
                   onChange={(e) => setFormData({ ...formData, commandLabel: e.target.value })}
                   required
                   size="small"
+                  className="form-input"
                 />
                 <Tooltip title="Human-readable name for the command. This is what users will see when selecting commands.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
@@ -190,7 +215,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }} className="form-field">
                 <TextField
                   fullWidth
                   label="Description *"
@@ -200,6 +225,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
                   rows={2}
                   required
                   size="small"
+                  className="form-textarea"
                 />
                 <Tooltip title="Detailed description of what the command does. This helps users understand the purpose and impact of the command.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20, mt: 1 }} />
@@ -207,26 +233,35 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TextField
-                  fullWidth
-                  label="Organization ID"
-                  type="number"
-                  value={formData.orgId}
-                  onChange={(e) => setFormData({ ...formData, orgId: parseInt(e.target.value) || 1 })}
-                  size="small"
-                />
-                <Tooltip title="The ID of the organization that owns this command. This links the command to its parent organization.">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="form-field">
+                <FormControl fullWidth size="small">
+                  <InputLabel>Organization *</InputLabel>
+                  <Select
+                    value={formData.orgId?.toString() || ''}
+                    onChange={(e) => setFormData({ ...formData, orgId: parseInt(e.target.value) || 1 })}
+                    label="Organization *"
+                    required
+                    className="form-select"
+                  >
+                    {mockOrganizations.map((org) => (
+                      <MenuItem key={org.id} value={org.id}>
+                        {org.orgName} ({org.orgId})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Tooltip title="The organization that owns this command. This links the command to its parent organization.">
                   <HelpIcon sx={{ color: '#757575', fontSize: 20 }} />
                 </Tooltip>
               </Box>
             </Grid>
           </Grid>
 
-          <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }} className="form-actions">
             <Button
               variant="outlined"
               onClick={handleCancel}
+              className="btn btn-secondary"
             >
               Cancel
             </Button>
@@ -235,6 +270,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ mode }) => {
               variant="contained"
               startIcon={<SaveIcon />}
               sx={{ backgroundColor: '#D71E28' }}
+              className="btn btn-primary"
             >
               {mode === 'create' ? 'Create Command' : 'Update Command'}
             </Button>

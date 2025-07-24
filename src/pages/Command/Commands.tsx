@@ -11,7 +11,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
   TextField,
   Dialog,
   DialogTitle,
@@ -58,6 +57,28 @@ interface BulkEditData {
   isActive?: boolean;
   description?: string;
 }
+
+// Mock organization data
+const mockOrganizations = [
+  {
+    id: 1,
+    orgId: 'ORG001',
+    orgName: 'Tech Solutions Inc',
+    mnemonic: 'TSI',
+  },
+  {
+    id: 2,
+    orgId: 'ORG002',
+    orgName: 'Data Analytics Corp',
+    mnemonic: 'DAC',
+  },
+  {
+    id: 3,
+    orgId: 'ORG003',
+    orgName: 'Cloud Infrastructure Ltd',
+    mnemonic: 'CIL',
+  }
+];
 
 // Mock data
 const mockCommands: Command[] = [
@@ -142,7 +163,7 @@ const Commands: React.FC = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -214,20 +235,48 @@ const Commands: React.FC = () => {
     navigate(`/administration/commands/detail/${command.id}`);
   };
 
+  const handleViewOrganization = (orgId: number) => {
+    navigate(`/administration/organizations/detail/${orgId}`);
+  };
+
+  // Get organization name for display
+  const getOrganizationName = (orgId: number) => {
+    const org = mockOrganizations.find(o => o.id === orgId);
+    return org ? org.orgName : `Organization ID: ${orgId}`;
+  };
+
 
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ p: 2 }}>
+      <Paper sx={{ p: 2 }} className="listing-container">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }} className="listing-header">
           <Box>
-            <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }}>
+            <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }} className="listing-title">
               Commands
             </Typography>
             {orgId && (
-              <Typography variant="body2" sx={{ color: '#757575', mt: 1 }}>
-                Filtered by Organization ID: {orgId}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                <Typography variant="body2" sx={{ color: '#757575' }}>
+                  Filtered by Organization:
+                </Typography>
+                <Button
+                  variant="text"
+                  onClick={() => handleViewOrganization(parseInt(orgId))}
+                  sx={{ 
+                    color: '#1976D2', 
+                    textTransform: 'none',
+                    p: 0,
+                    minWidth: 'auto',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                      backgroundColor: 'transparent'
+                    }
+                  }}
+                >
+                  {getOrganizationName(parseInt(orgId))}
+                </Button>
+              </Box>
             )}
           </Box>
           <Button
@@ -235,25 +284,27 @@ const Commands: React.FC = () => {
             startIcon={<AddIcon />}
             onClick={handleCreate}
             sx={{ backgroundColor: '#D71E28' }}
+            className="btn btn-primary"
           >
             Add Command
           </Button>
         </Box>
 
         {/* Search and Filters */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2 }} className="listing-actions">
           <TextField
             fullWidth
             placeholder="Search commands..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ mb: 1 }}
+            className="listing-search"
           />
         </Box>
 
         {/* Bulk Actions */}
         {selectedItems.length > 0 && (
-          <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }}>
+          <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }} className="listing-bulk-actions">
             <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
               {selectedItems.length} selected
             </Typography>
@@ -262,6 +313,7 @@ const Commands: React.FC = () => {
                 onClick={handleBulkEdit}
                 startIcon={<EditIcon />}
                 sx={{ mr: 1, minWidth: 140 }}
+                className="btn"
               >
                 Bulk Edit
               </Button>
@@ -271,7 +323,7 @@ const Commands: React.FC = () => {
 
         {/* Table */}
         <TableContainer>
-          <Table>
+          <Table className="listing-table">
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -279,11 +331,13 @@ const Commands: React.FC = () => {
                     indeterminate={selectedItems.length > 0 && selectedItems.length < filteredCommands.length}
                     checked={selectedItems.length === filteredCommands.length && filteredCommands.length > 0}
                     onChange={handleSelectAll}
+                    className="listing-checkbox"
                   />
                 </TableCell>
                 <TableCell>Command ID</TableCell>
                 <TableCell>Command Label</TableCell>
                 <TableCell>Description</TableCell>
+                <TableCell>Organization</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -304,10 +358,29 @@ const Commands: React.FC = () => {
                       <TableCell>{command.commandLabel}</TableCell>
                       <TableCell>{command.description}</TableCell>
                       <TableCell>
+                        <Button
+                          variant="text"
+                          onClick={() => handleViewOrganization(command.orgId)}
+                          sx={{ 
+                            color: '#1976D2', 
+                            textTransform: 'none',
+                            p: 0,
+                            minWidth: 'auto',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              backgroundColor: 'transparent'
+                            }
+                          }}
+                        >
+                          {getOrganizationName(command.orgId)}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
                         <Chip
                           icon={command.isActive ? <CheckCircleIcon /> : <CancelIcon />}
                           label={command.isActive ? 'Active' : 'Inactive'}
                           size="small"
+                          className={`listing-status ${command.isActive ? 'active' : 'inactive'}`}
                           sx={{
                             backgroundColor: command.isActive ? '#E8F5E8' : '#FFEBEE',
                             color: command.isActive ? '#1976D2' : '#D32F2F',
@@ -316,10 +389,11 @@ const Commands: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }} className="listing-actions-cell">
                           <IconButton
                             size="small"
                             onClick={() => handleExpandRow(command.id)}
+                            className="listing-action-btn"
                           >
                             {expandedRows.has(command.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                           </IconButton>
@@ -328,12 +402,14 @@ const Commands: React.FC = () => {
                             onClick={() => handleViewDetails(command)}
                             sx={{ color: '#4CAF50' }}
                             title="View Details"
+                            className="listing-action-btn view"
                           >
                             <VisibilityIcon />
                           </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(command)}
+                            className="listing-action-btn edit"
                           >
                             <EditIcon />
                           </IconButton>
@@ -341,6 +417,7 @@ const Commands: React.FC = () => {
                             size="small"
                             onClick={() => handleDelete(command.id)}
                             sx={{ color: '#D32F2F' }}
+                            className="listing-action-btn delete"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -409,15 +486,79 @@ const Commands: React.FC = () => {
           </Table>
         </TableContainer>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredCommands.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {/* Custom Pagination */}
+        <div className="listing-pagination">
+          <div className="listing-pagination-info">
+            Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredCommands.length)} of {filteredCommands.length} commands
+          </div>
+          <div className="listing-pagination-controls">
+            {/* Rows per page selector */}
+            <div className="listing-filter">
+              <label>Rows per page:</label>
+              <select 
+                value={rowsPerPage}
+                onChange={handleChangeRowsPerPage}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
+            
+            {/* Page navigation */}
+            <div className="d-flex align-items-center" style={{ gap: 'var(--spacing-xs)' }}>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, 0)}
+                disabled={page === 0}
+                title="First page"
+              >
+                «
+              </button>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, page - 1)}
+                disabled={page === 0}
+                title="Previous page"
+              >
+                ‹
+              </button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, Math.ceil(filteredCommands.length / rowsPerPage)) }, (_, i) => {
+                const pageNumber = i + 1;
+                const isActive = page === i;
+                return (
+                  <button
+                    key={pageNumber}
+                    className={`listing-pagination-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => handleChangePage(null, i)}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+              
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, page + 1)}
+                disabled={page >= Math.ceil(filteredCommands.length / rowsPerPage) - 1}
+                title="Next page"
+              >
+                ›
+              </button>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, Math.ceil(filteredCommands.length / rowsPerPage) - 1)}
+                disabled={page >= Math.ceil(filteredCommands.length / rowsPerPage) - 1}
+                title="Last page"
+              >
+                »
+              </button>
+            </div>
+          </div>
+        </div>
       </Paper>
 
 

@@ -144,22 +144,23 @@ const CommandDetail: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Box className="detail-container">
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }} className="detail-header">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button onClick={handleBack} startIcon={<ArrowBackIcon />}>
+          <Button onClick={handleBack} startIcon={<ArrowBackIcon />} className="btn btn-secondary">
             Back
           </Button>
-          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }}>
+          <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }} className="detail-title">
             Command Details
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }} className="detail-header-actions">
           <IconButton
             onClick={() => handleNavigateRecord('prev')}
             disabled={currentIndex === 0}
             title="Previous Record"
+            className="listing-action-btn"
           >
             <NavigateBeforeIcon />
           </IconButton>
@@ -170,6 +171,7 @@ const CommandDetail: React.FC = () => {
             onClick={() => handleNavigateRecord('next')}
             disabled={currentIndex === mockCommands.length - 1}
             title="Next Record"
+            className="listing-action-btn"
           >
             <NavigateNextIcon />
           </IconButton>
@@ -177,19 +179,19 @@ const CommandDetail: React.FC = () => {
       </Box>
 
       {/* Content */}
-      <Paper sx={{ p: 3 }}>
-        <Grid container spacing={3}>
+      <Paper sx={{ p: 2 }} className="detail-section">
+        <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle2" color="text.secondary">Command ID</Typography>
-            <Typography variant="body1" sx={{ mb: 3 }}>{command.commandId}</Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>{command.commandId}</Typography>
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle2" color="text.secondary">Command Label</Typography>
-            <Typography variant="body1" sx={{ mb: 3 }}>{command.commandLabel}</Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>{command.commandLabel}</Typography>
           </Grid>
           <Grid item xs={12}>
             <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-            <Typography variant="body1" sx={{ mb: 3 }}>{command.description}</Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>{command.description}</Typography>
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle2" color="text.secondary">Status</Typography>
@@ -197,6 +199,7 @@ const CommandDetail: React.FC = () => {
               icon={command.isActive ? <CheckCircleIcon /> : <CancelIcon />}
               label={command.isActive ? 'Active' : 'Inactive'}
               size="small"
+              className={`detail-status ${command.isActive ? 'active' : 'inactive'}`}
               sx={{
                 backgroundColor: command.isActive ? '#E8F5E8' : '#FFEBEE',
                                             color: command.isActive ? '#1976D2' : '#D32F2F',
@@ -211,12 +214,13 @@ const CommandDetail: React.FC = () => {
         </Grid>
 
         {/* Actions */}
-        <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+        <Box sx={{ display: 'flex', gap: 2, mt: 4 }} className="detail-actions">
           <Button 
             onClick={handleEdit} 
             variant="contained"
             startIcon={<EditIcon />}
             sx={{ backgroundColor: '#1976D2' }}
+            className="btn btn-primary"
           >
             Edit Command
           </Button>

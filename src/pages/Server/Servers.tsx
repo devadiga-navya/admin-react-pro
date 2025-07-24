@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -11,7 +11,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
   TextField,
   Dialog,
   DialogTitle,
@@ -67,6 +66,28 @@ interface BulkEditData {
   appLob?: string;
   domain?: string;
 }
+
+// Mock organization data
+const mockOrganizations = [
+  {
+    id: 1,
+    orgId: 'ORG001',
+    orgName: 'Tech Solutions Inc',
+    mnemonic: 'TSI',
+  },
+  {
+    id: 2,
+    orgId: 'ORG002',
+    orgName: 'Data Analytics Corp',
+    mnemonic: 'DAC',
+  },
+  {
+    id: 3,
+    orgId: 'ORG003',
+    orgName: 'Cloud Infrastructure Ltd',
+    mnemonic: 'CIL',
+  }
+];
 
 // Mock data
 const mockServers: Server[] = [
@@ -183,7 +204,7 @@ const Servers: React.FC = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -255,20 +276,48 @@ const Servers: React.FC = () => {
     navigate(`/administration/servers/detail/${server.id}`);
   };
 
+  const handleViewOrganization = (orgId: number) => {
+    navigate(`/administration/organizations/detail/${orgId}`);
+  };
+
+  // Get organization name for display
+  const getOrganizationName = (orgId: number) => {
+    const org = mockOrganizations.find(o => o.id === orgId);
+    return org ? org.orgName : `Organization ID: ${orgId}`;
+  };
+
 
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ p: 2 }}>
+      <Paper sx={{ p: 2 }} className="listing-container">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }} className="listing-header">
           <Box>
-            <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }}>
+            <Typography variant="h4" sx={{ color: '#212121', fontWeight: 600 }} className="listing-title">
               Servers
             </Typography>
             {orgId && (
-              <Typography variant="body2" sx={{ color: '#757575', mt: 1 }}>
-                Filtered by Organization ID: {orgId}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                <Typography variant="body2" sx={{ color: '#757575' }}>
+                  Filtered by Organization:
+                </Typography>
+                <Button
+                  variant="text"
+                  onClick={() => handleViewOrganization(parseInt(orgId))}
+                  sx={{ 
+                    color: '#1976D2', 
+                    textTransform: 'none',
+                    p: 0,
+                    minWidth: 'auto',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                      backgroundColor: 'transparent'
+                    }
+                  }}
+                >
+                  {getOrganizationName(parseInt(orgId))}
+                </Button>
+              </Box>
             )}
           </Box>
           <Button
@@ -276,25 +325,27 @@ const Servers: React.FC = () => {
             startIcon={<AddIcon />}
             onClick={handleCreate}
             sx={{ backgroundColor: '#D71E28' }}
+            className="btn btn-primary"
           >
             Add Server
           </Button>
         </Box>
 
         {/* Search and Filters */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2 }} className="listing-actions">
           <TextField
             fullWidth
             placeholder="Search servers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ mb: 1 }}
+            className="listing-search"
           />
         </Box>
 
         {/* Bulk Actions */}
         {selectedItems.length > 0 && (
-          <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }}>
+          <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }} className="listing-bulk-actions">
             <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
               {selectedItems.length} selected
             </Typography>
@@ -303,6 +354,7 @@ const Servers: React.FC = () => {
                 onClick={handleBulkEdit}
                 startIcon={<EditIcon />}
                 sx={{ mr: 1, minWidth: 140 }}
+                className="btn"
               >
                 Bulk Edit
               </Button>
@@ -312,7 +364,7 @@ const Servers: React.FC = () => {
 
         {/* Table */}
         <TableContainer>
-          <Table>
+          <Table className="listing-table">
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -320,11 +372,13 @@ const Servers: React.FC = () => {
                     indeterminate={selectedItems.length > 0 && selectedItems.length < filteredServers.length}
                     checked={selectedItems.length === filteredServers.length && filteredServers.length > 0}
                     onChange={handleSelectAll}
+                    className="listing-checkbox"
                   />
                 </TableCell>
                 <TableCell>Host Name</TableCell>
                 <TableCell>Domain</TableCell>
                 <TableCell>App LOB</TableCell>
+                <TableCell>Organization</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -345,10 +399,29 @@ const Servers: React.FC = () => {
                       <TableCell>{server.domain}</TableCell>
                       <TableCell>{server.appLob}</TableCell>
                       <TableCell>
+                        <Button
+                          variant="text"
+                          onClick={() => handleViewOrganization(server.orgId)}
+                          sx={{ 
+                            color: '#1976D2', 
+                            textTransform: 'none',
+                            p: 0,
+                            minWidth: 'auto',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              backgroundColor: 'transparent'
+                            }
+                          }}
+                        >
+                          {getOrganizationName(server.orgId)}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
                         <Chip
                           icon={server.isActive ? <CheckCircleIcon /> : <CancelIcon />}
                           label={server.isActive ? 'Active' : 'Inactive'}
                           size="small"
+                          className={`listing-status ${server.isActive ? 'active' : 'inactive'}`}
                           sx={{
                             backgroundColor: server.isActive ? '#E8F5E8' : '#FFEBEE',
                             color: server.isActive ? '#1976D2' : '#D32F2F',
@@ -357,10 +430,11 @@ const Servers: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }} className="listing-actions-cell">
                           <IconButton
                             size="small"
                             onClick={() => handleExpandRow(server.id)}
+                            className="listing-action-btn"
                           >
                             {expandedRows.has(server.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                           </IconButton>
@@ -369,12 +443,14 @@ const Servers: React.FC = () => {
                             onClick={() => handleViewDetails(server)}
                             sx={{ color: '#4CAF50' }}
                             title="View Details"
+                            className="listing-action-btn view"
                           >
                             <VisibilityIcon />
                           </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(server)}
+                            className="listing-action-btn edit"
                           >
                             <EditIcon />
                           </IconButton>
@@ -382,6 +458,7 @@ const Servers: React.FC = () => {
                             size="small"
                             onClick={() => handleDelete(server.id)}
                             sx={{ color: '#D32F2F' }}
+                            className="listing-action-btn delete"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -474,15 +551,79 @@ const Servers: React.FC = () => {
           </Table>
         </TableContainer>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredServers.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {/* Custom Pagination */}
+        <div className="listing-pagination">
+          <div className="listing-pagination-info">
+            Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredServers.length)} of {filteredServers.length} servers
+          </div>
+          <div className="listing-pagination-controls">
+            {/* Rows per page selector */}
+            <div className="listing-filter">
+              <label>Rows per page:</label>
+              <select 
+                value={rowsPerPage}
+                onChange={handleChangeRowsPerPage}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
+            
+            {/* Page navigation */}
+            <div className="d-flex align-items-center" style={{ gap: 'var(--spacing-xs)' }}>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, 0)}
+                disabled={page === 0}
+                title="First page"
+              >
+                «
+              </button>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, page - 1)}
+                disabled={page === 0}
+                title="Previous page"
+              >
+                ‹
+              </button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, Math.ceil(filteredServers.length / rowsPerPage)) }, (_, i) => {
+                const pageNumber = i + 1;
+                const isActive = page === i;
+                return (
+                  <button
+                    key={pageNumber}
+                    className={`listing-pagination-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => handleChangePage(null, i)}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+              
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, page + 1)}
+                disabled={page >= Math.ceil(filteredServers.length / rowsPerPage) - 1}
+                title="Next page"
+              >
+                ›
+              </button>
+              <button
+                className="listing-pagination-btn"
+                onClick={() => handleChangePage(null, Math.ceil(filteredServers.length / rowsPerPage) - 1)}
+                disabled={page >= Math.ceil(filteredServers.length / rowsPerPage) - 1}
+                title="Last page"
+              >
+                »
+              </button>
+            </div>
+          </div>
+        </div>
       </Paper>
 
 
@@ -510,189 +651,7 @@ const Servers: React.FC = () => {
   );
 };
 
-// Server Dialog Component
-interface ServerDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (data: Partial<Server>) => void;
-  server?: Server | null;
-}
 
-const ServerDialog: React.FC<ServerDialogProps> = ({ open, onClose, onSave, server }) => {
-  const [formData, setFormData] = useState<Partial<Server>>({
-    hostName: '',
-    domain: '',
-    appLob: '',
-    wfguid: '',
-    appid: '',
-    app_supported_by: '',
-    app_managed_by: '',
-    tso_managed_by: '',
-    tso_supported_by: '',
-    device_managed_by: '',
-    device_supported_by: '',
-    isActive: true,
-    orgId: 1,
-  });
-
-  useEffect(() => {
-    if (server) {
-      setFormData(server);
-    } else {
-      setFormData({
-        hostName: '',
-        domain: '',
-        appLob: '',
-        wfguid: '',
-        appid: '',
-        app_supported_by: '',
-        app_managed_by: '',
-        tso_managed_by: '',
-        tso_supported_by: '',
-        device_managed_by: '',
-        device_supported_by: '',
-        isActive: true,
-        orgId: 1,
-      });
-    }
-  }, [server]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        {server ? 'Edit Server' : 'Create Server'}
-      </DialogTitle>
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Host Name"
-                value={formData.hostName}
-                onChange={(e) => setFormData({ ...formData, hostName: e.target.value })}
-                required
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Domain"
-                value={formData.domain}
-                onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-                required
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>App LOB</InputLabel>
-                <Select
-                  value={formData.appLob}
-                  onChange={(e) => setFormData({ ...formData, appLob: e.target.value })}
-                  label="App LOB"
-                  required
-                >
-                  <MenuItem value="Finance">Finance</MenuItem>
-                  <MenuItem value="HR">HR</MenuItem>
-                  <MenuItem value="Analytics">Analytics</MenuItem>
-                  <MenuItem value="DevOps">DevOps</MenuItem>
-                  <MenuItem value="Marketing">Marketing</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="WF GUID"
-                value={formData.wfguid}
-                onChange={(e) => setFormData({ ...formData, wfguid: e.target.value })}
-                required
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="App ID"
-                value={formData.appid}
-                onChange={(e) => setFormData({ ...formData, appid: e.target.value })}
-                required
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="App Supported By"
-                value={formData.app_supported_by}
-                onChange={(e) => setFormData({ ...formData, app_supported_by: e.target.value })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="App Managed By"
-                value={formData.app_managed_by}
-                onChange={(e) => setFormData({ ...formData, app_managed_by: e.target.value })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="TSO Managed By"
-                value={formData.tso_managed_by}
-                onChange={(e) => setFormData({ ...formData, tso_managed_by: e.target.value })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="TSO Supported By"
-                value={formData.tso_supported_by}
-                onChange={(e) => setFormData({ ...formData, tso_supported_by: e.target.value })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Device Managed By"
-                value={formData.device_managed_by}
-                onChange={(e) => setFormData({ ...formData, device_managed_by: e.target.value })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Device Supported By"
-                value={formData.device_supported_by}
-                onChange={(e) => setFormData({ ...formData, device_supported_by: e.target.value })}
-                margin="normal"
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" variant="contained" sx={{ backgroundColor: '#D71E28' }}>
-            {server ? 'Update' : 'Create'}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
-  );
-};
 
 // Bulk Edit Dialog Component
 interface BulkEditDialogProps {
